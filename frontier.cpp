@@ -85,17 +85,26 @@ public:
     // 初期状態を記述
     // mateはint型の配列
     // 辺の本数
+    mate[0] = 100000;
     for (int i = 1; i < G.numEdges() + 1; i++)
     {
       mate[i] = i;
       // std::cout << mate[i] << std::endl;
     }
 
+    std::cout << "mate配列の中身確認" << std::endl;
+    for (int i = 0; i < G.numEdges() + 1; i++)
+    {
+      std::cout << mate[i] << std::endl;
+    }
+
     // std::map<int, std::set<int> > frontier;
 
-    // 辺の本数
     std::cout << "G.getStart(): ";
     std::cout << G.getStart() << std::endl;
+
+    std::cout << "G.getTerminal(): ";
+    std::cout << G.getTerminal() << std::endl;
     return G.numEdges();
   }
 
@@ -105,11 +114,14 @@ public:
     // 終端節点は特殊(0-終端:0 1-終端:-1)
     // value: 枝の種類(0 or 1)
 
-    std::pair<int, int> pair = G.getEdge(G.numEdges() - level - 1);
-    int u = pair.first - 1;
-    int v = pair.second - 1;
-    std::cout << "level - 1: ";
-    std::cout << level - 1 << std::endl;
+    std::cout << "level: ";
+    std::cout << level << std::endl;
+    // 後ろから探索していく→辺の両端の点を取得する
+    std::pair<int, int> pair = G.getEdge(G.numEdges() - level);
+    int u = pair.first;
+    int v = pair.second;
+    std::cout << "level: ";
+    std::cout << level << std::endl;
     std::cout << "u: ";
     std::cout << u << std::endl;
     std::cout << "v: ";
@@ -136,22 +148,29 @@ public:
         mate[u] = v;
         mate[v] = u;
       }
-      else if (mate[mate[u]] == u && mate[v] == v)
+      else if (mate[u] != u && mate[v] == v)
       {
         // 既存パスの延長
-        // int w = mate[u];
-        mate[u] = 0;
-        mate[mate[u]] = v;
+        int tmp = mate[v];
         mate[v] = mate[u];
+        mate[mate[u]] = tmp;
+        mate[u] = 0;
+        // mate[u] = 0;
+        // mate[mate[u]] = v;
+        // mate[v] = mate[u];
       }
-      else if (mate[mate[v]] == v && mate[u] == u)
+      else if (mate[u] == u && mate[v] != v)
       {
         // 既存パスの延長
         // 逆バージョン
-        // int w = mate[v];
-        mate[v] = 0;
-        mate[mate[v]] = u;
+        int tmp = mate[u];
         mate[u] = mate[v];
+        mate[mate[v]] = tmp;
+        mate[v] = 0;
+
+        // mate[v] = 0;
+        // mate[mate[v]] = u;
+        // mate[u] = mate[v];
       }
       else if (mate[mate[u]] == u && mate[mate[v]] == v)
       {
@@ -185,7 +204,6 @@ public:
 
     // TODO: s-tパスが孤立する枝刈り
     // sが孤立したとき
-
     if (level == 0)
     {
       // 最後まで行ったとき
@@ -208,15 +226,22 @@ public:
     // TODO: 終端節点チェック(解の完成)
     if (mate[G.getStart()] == G.getTerminal() && mate[G.getTerminal()] == G.getStart())
     {
-      for (int i = 1; i < G.numVertices(); i++)
+      int success = 1;
+      for (int i = 1; i < G.numVertices() + 1; i++)
       {
         if (i == G.getStart() || i == G.getTerminal())
           continue;
-        if (mate[i] == 0 || mate[i + 1] == 0)
+        if (mate[i] != 0 && mate[i] != i)
+        {
+          success = 0;
           break;
+        }
       }
       // 解の完成
-      return -1;
+      if (success == 1)
+        return -1;
+
+      return 0;
     }
 
     // 冗長なパスあり
@@ -276,6 +301,7 @@ int main(int argc, char **argv)
 
   PathZDD pathZdd(G);
   tdzdd::DdStructure<2> dd(pathZdd);
+  std::cout << "dd.zddCardinality(): ";
   std::cout << dd.zddCardinality() << std::endl;
   dd.dumpDot();
 }
