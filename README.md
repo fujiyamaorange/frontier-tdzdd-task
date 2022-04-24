@@ -15,7 +15,7 @@ g++ frontier.cpp -o frontier.out -I include/
 example
 
 ```
-./frontier graph-data/grid2x2.grh
+./frontier.out graph-data/grid2x2.grh
 ```
 
 ### 画像ファイルを生成
