@@ -5,6 +5,12 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <iostream>
+#include <fstream>
+#include <string>
+
+std::map<int, std::set<int> > frontier;
 
 // グラフを表すクラス Graph
 class Graph
@@ -49,6 +55,94 @@ public:
     return m;
   }
 
+  // フロンティアの構築
+  // frontierにはその辺を操作した時に抜ける点を格納する
+  void constructFrontier() const
+  {
+    std::set<int> tmpset;
+    std::set<int> nokori;
+    for (int i = 0; i < numEdges(); i++)
+    {
+      int u = getEdge(i).first;
+      int v = getEdge(i).second;
+      std::cout << "u: ";
+      std::cout << u;
+      std::cout << " v: ";
+      std::cout << v << std::endl;
+
+      // 現在の集合に入れる
+      tmpset.insert(u);
+      tmpset.insert(v);
+
+      std::cout << "tmpsetの確認開始" << std::endl;
+      std::set<int>::iterator t = tmpset.begin();
+      while (t != tmpset.end())
+      {
+        std::cout << *t++ << std::endl;
+      }
+      std::cout << "tmpsetの確認終了" << std::endl;
+
+      for (int j = i + 1; j < numEdges(); j++)
+      {
+        // ここでこのiに対してのsetを作る→これから出てくる点の集合
+        int x = getEdge(j).first;
+        int y = getEdge(j).second;
+        std::cout << "x: ";
+        std::cout << x;
+        std::cout << " y: ";
+        std::cout << y << std::endl;
+        nokori.insert(x);
+        nokori.insert(y);
+      }
+      std::cout << "nokoriの確認開始" << std::endl;
+      std::set<int>::iterator n = nokori.begin();
+      while (n != nokori.end())
+      {
+        std::cout << *n++ << std::endl;
+      }
+      std::cout << "nokoriの確認終了" << std::endl;
+
+      std::set<int>::iterator k = tmpset.begin();
+      for (; k != tmpset.end(); k++)
+      {
+        if (nokori.size() <= 0)
+          break;
+        decltype(tmpset)::iterator it = nokori.find(*k);
+        std::cout << "nokoriの中にあるか確認: ";
+        std::cout << *k << std::endl;
+        if (it == nokori.end())
+        {
+          // 見つからなかった場合→フロンティアに追加＆集合から外す
+          std::cout << "フロンティアに要素が追加: ";
+          std::cout << *k << std::endl;
+          // WARNING: index
+          frontier[i].insert(*k);
+          tmpset.erase(*k);
+          std::cout << "どこ？3" << std::endl;
+        }
+        std::cout << "どこ？3.5" << std::endl;
+        std::cout << *k << std::endl;
+      }
+
+      // 集合を空にする
+      std::cout << "どこ？4" << std::endl;
+      nokori.clear();
+    }
+
+    std::cout << "フロンティアの確認開始" << std::endl;
+    for (int i = 0; i < numEdges(); i++)
+    {
+      std::cout << i;
+      std::cout << "の時のフロンティア" << std::endl;
+      std::set<int>::iterator k = frontier[i].begin();
+      for (; k != frontier[i].end(); k++)
+      {
+        std::cout << *k << std::endl;
+      }
+    }
+    std::cout << "フロンティアの確認終了" << std::endl;
+  }
+
   void printEdges() const
   {
     // std::cout << "#edges: " << m << std::endl;
@@ -77,34 +171,32 @@ class PathZDD : public tdzdd::PodArrayDdSpec<PathZDD, int, 2>
 public:
   PathZDD(Graph G) : G(G)
   {
-    setArraySize(G.numEdges() + 1);
+    setArraySize(G.numVertices() + 1);
   }
 
   int getRoot(int *mate) const
   {
     // 初期状態を記述
-    // mateはint型の配列
-    // 辺の本数
+
+    // mate配列の初期化
     mate[0] = 100000;
-    for (int i = 1; i < G.numEdges() + 1; i++)
+    for (int i = 1; i < G.numVertices() + 1; i++)
     {
       mate[i] = i;
-      // std::cout << mate[i] << std::endl;
     }
 
-    std::cout << "mate配列の中身確認" << std::endl;
-    for (int i = 0; i < G.numEdges() + 1; i++)
+    std::cout << "mate配列の中身確認" << std::endl; // 先頭は100000
+    for (int i = 0; i < G.numVertices() + 1; i++)
     {
       std::cout << mate[i] << std::endl;
     }
 
-    // std::map<int, std::set<int> > frontier;
-
-    std::cout << "G.getStart(): ";
+    std::cout << "スタート点: ";
     std::cout << G.getStart() << std::endl;
 
-    std::cout << "G.getTerminal(): ";
+    std::cout << "ゴール点: ";
     std::cout << G.getTerminal() << std::endl;
+
     return G.numEdges();
   }
 
@@ -114,14 +206,16 @@ public:
     // 終端節点は特殊(0-終端:0 1-終端:-1)
     // value: 枝の種類(0 or 1)
 
-    std::cout << "level: ";
-    std::cout << level << std::endl;
     // 後ろから探索していく→辺の両端の点を取得する
     std::pair<int, int> pair = G.getEdge(G.numEdges() - level);
+    std::cout << "G.numEdges() - level: ";
+    std::cout << G.numEdges() - level << std::endl;
     int u = pair.first;
     int v = pair.second;
     std::cout << "level: ";
     std::cout << level << std::endl;
+    std::cout << "value: ";
+    std::cout << value << std::endl;
     std::cout << "u: ";
     std::cout << u << std::endl;
     std::cout << "v: ";
@@ -155,9 +249,6 @@ public:
         mate[v] = mate[u];
         mate[mate[u]] = tmp;
         mate[u] = 0;
-        // mate[u] = 0;
-        // mate[mate[u]] = v;
-        // mate[v] = mate[u];
       }
       else if (mate[u] == u && mate[v] != v)
       {
@@ -167,31 +258,15 @@ public:
         mate[u] = mate[v];
         mate[mate[v]] = tmp;
         mate[v] = 0;
-
-        // mate[v] = 0;
-        // mate[mate[v]] = u;
-        // mate[u] = mate[v];
       }
-      else if (mate[mate[u]] == u && mate[mate[v]] == v)
+      // else if (mate[mate[u]] == u && mate[mate[v]] == v)
+      else if (mate[u] != u && mate[v] != v)
       {
         // 2つのパスの融合
-        // int w = mate[u];
-        // int x = mate[v];
         mate[mate[u]] = mate[v];
         mate[mate[v]] = mate[u];
         mate[u] = 0;
         mate[v] = 0;
-      }
-      else if (mate[mate[v]] == v && mate[mate[u]] == u)
-      {
-        // 2つのパスの融合
-        // 逆バージョン
-        // int w = mate[v];
-        // int x = mate[u];
-        mate[mate[v]] = mate[u];
-        mate[mate[u]] = mate[v];
-        mate[v] = 0;
-        mate[u] = 0;
       }
     }
 
@@ -202,9 +277,40 @@ public:
       return 0;
     }
 
+    // TODO: sとt以外の頂点が短点となってフロンティアから抜ける枝刈り
+    // levelから今回フロンティアから抜けるものをピックアップ
+    // それがsとtではなく，かつmate[u] != 0の時return 0
+    std::set<int> thisTimeFrontier = frontier[G.numEdges() - level];
+    std::cout << "frontierのindex = ";
+    std::cout << G.numEdges() - level << std::endl;
+    std::set<int>::iterator f = thisTimeFrontier.begin();
+    for (; f != thisTimeFrontier.end(); f++)
+    {
+      std::cout << "フロンティアの確認: ";
+      std::cout << *f << std::endl;
+      if (*f == G.getStart() || *f == G.getTerminal())
+        continue;
+
+      // 端点である
+      if (mate[*f] != 0 && mate[*f] != *f)
+      {
+        std::cout << "フロンティアから抜ける！ level = ";
+        std::cout << level << std::endl;
+        return 0;
+      }
+
+      // sにつながる辺がなくなった時
+      if (*f == G.getStart() && mate[*f] == G.getStart())
+      {
+        std::cout << "sがフロンティアから抜ける！ level = ";
+        std::cout << level << std::endl;
+        return 0;
+      }
+    }
+
     // TODO: s-tパスが孤立する枝刈り
     // sが孤立したとき
-    if (level == 0)
+    if (level == 1)
     {
       // 最後まで行ったとき
       if (mate[G.getStart()] == G.getStart())
@@ -214,14 +320,12 @@ public:
       }
 
       // tが孤立したとき
-      if (mate[G.getTerminal() == G.getTerminal()])
+      if (mate[G.getTerminal()] == G.getTerminal())
       {
         std::cout << "tが孤立" << std::endl;
         return 0;
       }
     }
-
-    // TODO: sとt以外の頂点が短点となってフロンティアから抜ける枝刈り
 
     // TODO: 終端節点チェック(解の完成)
     if (mate[G.getStart()] == G.getTerminal() && mate[G.getTerminal()] == G.getStart())
@@ -300,8 +404,17 @@ int main(int argc, char **argv)
   G.print();
 
   PathZDD pathZdd(G);
+  // フロンティアを構築
+  G.constructFrontier();
   tdzdd::DdStructure<2> dd(pathZdd);
   std::cout << "dd.zddCardinality(): ";
   std::cout << dd.zddCardinality() << std::endl;
   dd.dumpDot();
+
+  // std::ofstream outputfile("result.dot");
+  // if (outputfile)
+  // {
+  //   outputfile << dd.dumpDot() << std::endl;
+  // }
+  // outputfile.close();
 }
