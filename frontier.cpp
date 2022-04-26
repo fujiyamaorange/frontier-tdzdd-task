@@ -307,6 +307,15 @@ public:
         std::cout << level << std::endl;
         return 0;
       }
+
+      // 効率的な実装のために(スライド6回目16p)
+      if (mate[*f] == 0 || mate[*f] == *f)
+      {
+        if (*f != G.getStart())
+        {
+          mate[*f] = 0;
+        }
+      }
     }
 
     // TODO: s-tパスが孤立する枝刈り
