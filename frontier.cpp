@@ -288,6 +288,15 @@ public:
     {
       std::cout << "フロンティアの確認: ";
       std::cout << *f << std::endl;
+
+      // sにつながる辺がなくなった時
+      if (*f == G.getStart() && mate[*f] == G.getStart())
+      {
+        std::cout << "sがフロンティアから抜ける！ level = ";
+        std::cout << level << std::endl;
+        return 0;
+      }
+
       if (*f == G.getStart() || *f == G.getTerminal())
         continue;
 
@@ -295,14 +304,6 @@ public:
       if (mate[*f] != 0 && mate[*f] != *f)
       {
         std::cout << "フロンティアから抜ける！ level = ";
-        std::cout << level << std::endl;
-        return 0;
-      }
-
-      // sにつながる辺がなくなった時
-      if (*f == G.getStart() && mate[*f] == G.getStart())
-      {
-        std::cout << "sがフロンティアから抜ける！ level = ";
         std::cout << level << std::endl;
         return 0;
       }
