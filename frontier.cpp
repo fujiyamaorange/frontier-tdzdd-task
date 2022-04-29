@@ -65,42 +65,42 @@ public:
     {
       int u = getEdge(i).first;
       int v = getEdge(i).second;
-      std::cout << "u: ";
-      std::cout << u;
-      std::cout << " v: ";
-      std::cout << v << std::endl;
+      // std::cout << "u: ";
+      // std::cout << u;
+      // std::cout << " v: ";
+      // std::cout << v << std::endl;
 
       // 現在の集合に入れる
       tmpset.insert(u);
       tmpset.insert(v);
 
-      std::cout << "tmpsetの確認開始" << std::endl;
-      std::set<int>::iterator t = tmpset.begin();
-      while (t != tmpset.end())
-      {
-        std::cout << *t++ << std::endl;
-      }
-      std::cout << "tmpsetの確認終了" << std::endl;
+      // std::cout << "tmpsetの確認開始" << std::endl;
+      // std::set<int>::iterator t = tmpset.begin();
+      // while (t != tmpset.end())
+      // {
+      //   std::cout << *t++ << std::endl;
+      // }
+      // std::cout << "tmpsetの確認終了" << std::endl;
 
       for (int j = i + 1; j < numEdges(); j++)
       {
         // ここでこのiに対してのsetを作る→これから出てくる点の集合
         int x = getEdge(j).first;
         int y = getEdge(j).second;
-        std::cout << "x: ";
-        std::cout << x;
-        std::cout << " y: ";
-        std::cout << y << std::endl;
+        // std::cout << "x: ";
+        // std::cout << x;
+        // std::cout << " y: ";
+        // std::cout << y << std::endl;
         nokori.insert(x);
         nokori.insert(y);
       }
-      std::cout << "nokoriの確認開始" << std::endl;
-      std::set<int>::iterator n = nokori.begin();
-      while (n != nokori.end())
-      {
-        std::cout << *n++ << std::endl;
-      }
-      std::cout << "nokoriの確認終了" << std::endl;
+      // std::cout << "nokoriの確認開始" << std::endl;
+      // std::set<int>::iterator n = nokori.begin();
+      // while (n != nokori.end())
+      // {
+      //   std::cout << *n++ << std::endl;
+      // }
+      // std::cout << "nokoriの確認終了" << std::endl;
 
       std::set<int>::iterator k = tmpset.begin();
       for (; k != tmpset.end(); k++)
@@ -108,39 +108,36 @@ public:
         if (nokori.size() <= 0)
           break;
         decltype(tmpset)::iterator it = nokori.find(*k);
-        std::cout << "nokoriの中にあるか確認: ";
-        std::cout << *k << std::endl;
+        // std::cout << "nokoriの中にあるか確認: ";
+        // std::cout << *k << std::endl;
         if (it == nokori.end())
         {
           // 見つからなかった場合→フロンティアに追加＆集合から外す
-          std::cout << "フロンティアに要素が追加: ";
-          std::cout << *k << std::endl;
+          // std::cout << "フロンティアに要素が追加: ";
+          // std::cout << *k << std::endl;
           // WARNING: index
           frontier[i].insert(*k);
           tmpset.erase(*k);
-          std::cout << "どこ？3" << std::endl;
         }
-        std::cout << "どこ？3.5" << std::endl;
-        std::cout << *k << std::endl;
+        // std::cout << *k << std::endl;
       }
 
       // 集合を空にする
-      std::cout << "どこ？4" << std::endl;
       nokori.clear();
     }
 
-    std::cout << "フロンティアの確認開始" << std::endl;
-    for (int i = 0; i < numEdges(); i++)
-    {
-      std::cout << i;
-      std::cout << "の時のフロンティア" << std::endl;
-      std::set<int>::iterator k = frontier[i].begin();
-      for (; k != frontier[i].end(); k++)
-      {
-        std::cout << *k << std::endl;
-      }
-    }
-    std::cout << "フロンティアの確認終了" << std::endl;
+    // std::cout << "フロンティアの確認開始" << std::endl;
+    // for (int i = 0; i < numEdges(); i++)
+    // {
+    //   std::cout << i;
+    //   std::cout << "の時のフロンティア" << std::endl;
+    //   std::set<int>::iterator k = frontier[i].begin();
+    //   for (; k != frontier[i].end(); k++)
+    //   {
+    //     std::cout << *k << std::endl;
+    //   }
+    // }
+    // std::cout << "フロンティアの確認終了" << std::endl;
   }
 
   void printEdges() const
@@ -185,17 +182,17 @@ public:
       mate[i] = i;
     }
 
-    std::cout << "mate配列の中身確認" << std::endl; // 先頭は100000
-    for (int i = 0; i < G.numVertices() + 1; i++)
-    {
-      std::cout << mate[i] << std::endl;
-    }
+    // std::cout << "mate配列の中身確認" << std::endl; // 先頭は100000
+    // for (int i = 0; i < G.numVertices() + 1; i++)
+    // {
+    //   std::cout << mate[i] << std::endl;
+    // }
 
-    std::cout << "スタート点: ";
-    std::cout << G.getStart() << std::endl;
+    // std::cout << "スタート点: ";
+    // std::cout << G.getStart() << std::endl;
 
-    std::cout << "ゴール点: ";
-    std::cout << G.getTerminal() << std::endl;
+    // std::cout << "ゴール点: ";
+    // std::cout << G.getTerminal() << std::endl;
 
     return G.numEdges();
   }
@@ -208,31 +205,31 @@ public:
 
     // 後ろから探索していく→辺の両端の点を取得する
     std::pair<int, int> pair = G.getEdge(G.numEdges() - level);
-    std::cout << "G.numEdges() - level: ";
-    std::cout << G.numEdges() - level << std::endl;
+    // std::cout << "G.numEdges() - level: ";
+    // std::cout << G.numEdges() - level << std::endl;
     int u = pair.first;
     int v = pair.second;
-    std::cout << "level: ";
-    std::cout << level << std::endl;
-    std::cout << "value: ";
-    std::cout << value << std::endl;
-    std::cout << "u: ";
-    std::cout << u << std::endl;
-    std::cout << "v: ";
-    std::cout << v << std::endl;
+    // std::cout << "level: ";
+    // std::cout << level << std::endl;
+    // std::cout << "value: ";
+    // std::cout << value << std::endl;
+    // std::cout << "u: ";
+    // std::cout << u << std::endl;
+    // std::cout << "v: ";
+    // std::cout << v << std::endl;
 
     if (value == 1)
     {
       // 中点の枝刈り
       if (mate[u] == 0 || mate[v] == 0)
       {
-        std::cout << "中点！" << std::endl;
+        // std::cout << "中点！" << std::endl;
         return 0;
       }
       // 閉路の枝刈り
       if (mate[u] == v && mate[v] == u)
       {
-        std::cout << "閉路！" << std::endl;
+        // std::cout << "閉路！" << std::endl;
         return 0;
       }
 
@@ -273,7 +270,7 @@ public:
     // sが中点の枝刈り
     if (mate[G.getStart()] == 0)
     {
-      std::cout << "sが中点！" << std::endl;
+      // std::cout << "sが中点！" << std::endl;
       return 0;
     }
 
@@ -281,19 +278,19 @@ public:
     // levelから今回フロンティアから抜けるものをピックアップ
     // それがsとtではなく，かつmate[u] != 0の時return 0
     std::set<int> thisTimeFrontier = frontier[G.numEdges() - level];
-    std::cout << "frontierのindex = ";
-    std::cout << G.numEdges() - level << std::endl;
+    // std::cout << "frontierのindex = ";
+    // std::cout << G.numEdges() - level << std::endl;
     std::set<int>::iterator f = thisTimeFrontier.begin();
     for (; f != thisTimeFrontier.end(); f++)
     {
-      std::cout << "フロンティアの確認: ";
-      std::cout << *f << std::endl;
+      // std::cout << "フロンティアの確認: ";
+      // std::cout << *f << std::endl;
 
       // sにつながる辺がなくなった時
       if (*f == G.getStart() && mate[*f] == G.getStart())
       {
-        std::cout << "sがフロンティアから抜ける！ level = ";
-        std::cout << level << std::endl;
+        // std::cout << "sがフロンティアから抜ける！ level = ";
+        // std::cout << level << std::endl;
         return 0;
       }
 
@@ -303,8 +300,8 @@ public:
       // 端点である
       if (mate[*f] != 0 && mate[*f] != *f)
       {
-        std::cout << "フロンティアから抜ける！ level = ";
-        std::cout << level << std::endl;
+        // std::cout << "フロンティアから抜ける！ level = ";
+        // std::cout << level << std::endl;
         return 0;
       }
 
@@ -325,14 +322,14 @@ public:
       // 最後まで行ったとき
       if (mate[G.getStart()] == G.getStart())
       {
-        std::cout << "sが孤立！" << std::endl;
+        // std::cout << "sが孤立！" << std::endl;
         return 0;
       }
 
       // tが孤立したとき
       if (mate[G.getTerminal()] == G.getTerminal())
       {
-        std::cout << "tが孤立" << std::endl;
+        // std::cout << "tが孤立" << std::endl;
         return 0;
       }
     }
@@ -363,7 +360,7 @@ public:
     {
       if (mate[v] == u && mate[u] == v)
       {
-        std::cout << "冗長なパス！" << std::endl;
+        // std::cout << "冗長なパス！" << std::endl;
         return 0;
       }
     }
@@ -419,12 +416,5 @@ int main(int argc, char **argv)
   tdzdd::DdStructure<2> dd(pathZdd);
   std::cout << "dd.zddCardinality(): ";
   std::cout << dd.zddCardinality() << std::endl;
-  dd.dumpDot();
-
-  // std::ofstream outputfile("result.dot");
-  // if (outputfile)
-  // {
-  //   outputfile << dd.dumpDot() << std::endl;
-  // }
-  // outputfile.close();
+  // dd.dumpDot();
 }
