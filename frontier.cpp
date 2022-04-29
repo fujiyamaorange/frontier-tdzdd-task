@@ -11,8 +11,9 @@
 #include <string>
 
 std::map<int, std::set<int> > frontier;
+int countBranchCut;
+int countGoal;
 
-// グラフを表すクラス Graph
 class Graph
 {
 private:
@@ -55,8 +56,7 @@ public:
     return m;
   }
 
-  // フロンティアの構築
-  // frontierにはその辺を操作した時に抜ける点を格納する
+  // frontier[i[にはiの時にフロンティアから抜ける点を格納する
   void constructFrontier() const
   {
     std::set<int> tmpset;
@@ -65,12 +65,6 @@ public:
     {
       int u = getEdge(i).first;
       int v = getEdge(i).second;
-      // std::cout << "u: ";
-      // std::cout << u;
-      // std::cout << " v: ";
-      // std::cout << v << std::endl;
-
-      // 現在の集合に入れる
       tmpset.insert(u);
       tmpset.insert(v);
 
@@ -82,15 +76,11 @@ public:
       // }
       // std::cout << "tmpsetの確認終了" << std::endl;
 
+      // これから出てくる点の集合をnokoriにまとめる
       for (int j = i + 1; j < numEdges(); j++)
       {
-        // ここでこのiに対してのsetを作る→これから出てくる点の集合
         int x = getEdge(j).first;
         int y = getEdge(j).second;
-        // std::cout << "x: ";
-        // std::cout << x;
-        // std::cout << " y: ";
-        // std::cout << y << std::endl;
         nokori.insert(x);
         nokori.insert(y);
       }
@@ -102,27 +92,21 @@ public:
       // }
       // std::cout << "nokoriの確認終了" << std::endl;
 
+      if (nokori.size() <= 0)
+        continue;
+
       std::set<int>::iterator k = tmpset.begin();
       for (; k != tmpset.end(); k++)
       {
-        if (nokori.size() <= 0)
-          break;
         decltype(tmpset)::iterator it = nokori.find(*k);
-        // std::cout << "nokoriの中にあるか確認: ";
-        // std::cout << *k << std::endl;
         if (it == nokori.end())
         {
-          // 見つからなかった場合→フロンティアに追加＆集合から外す
-          // std::cout << "フロンティアに要素が追加: ";
-          // std::cout << *k << std::endl;
-          // WARNING: index
+          // 見つからなかった場合
           frontier[i].insert(*k);
           tmpset.erase(*k);
         }
-        // std::cout << *k << std::endl;
       }
 
-      // 集合を空にする
       nokori.clear();
     }
 
@@ -162,7 +146,6 @@ public:
 // TdZdd で表現すべき部分
 class PathZDD : public tdzdd::PodArrayDdSpec<PathZDD, int, 2>
 {
-  // 計算状態が配列
   Graph const G;
 
 public:
@@ -175,24 +158,12 @@ public:
   {
     // 初期状態を記述
 
-    // mate配列の初期化
+    // 1-index
     mate[0] = 100000;
     for (int i = 1; i < G.numVertices() + 1; i++)
     {
       mate[i] = i;
     }
-
-    // std::cout << "mate配列の中身確認" << std::endl; // 先頭は100000
-    // for (int i = 0; i < G.numVertices() + 1; i++)
-    // {
-    //   std::cout << mate[i] << std::endl;
-    // }
-
-    // std::cout << "スタート点: ";
-    // std::cout << G.getStart() << std::endl;
-
-    // std::cout << "ゴール点: ";
-    // std::cout << G.getTerminal() << std::endl;
 
     return G.numEdges();
   }
@@ -205,31 +176,21 @@ public:
 
     // 後ろから探索していく→辺の両端の点を取得する
     std::pair<int, int> pair = G.getEdge(G.numEdges() - level);
-    // std::cout << "G.numEdges() - level: ";
-    // std::cout << G.numEdges() - level << std::endl;
     int u = pair.first;
     int v = pair.second;
-    // std::cout << "level: ";
-    // std::cout << level << std::endl;
-    // std::cout << "value: ";
-    // std::cout << value << std::endl;
-    // std::cout << "u: ";
-    // std::cout << u << std::endl;
-    // std::cout << "v: ";
-    // std::cout << v << std::endl;
 
     if (value == 1)
     {
       // 中点の枝刈り
       if (mate[u] == 0 || mate[v] == 0)
       {
-        // std::cout << "中点！" << std::endl;
+        countBranchCut++;
         return 0;
       }
       // 閉路の枝刈り
       if (mate[u] == v && mate[v] == u)
       {
-        // std::cout << "閉路！" << std::endl;
+        countBranchCut++;
         return 0;
       }
 
@@ -249,14 +210,12 @@ public:
       }
       else if (mate[u] == u && mate[v] != v)
       {
-        // 既存パスの延長
-        // 逆バージョン
+        // 既存パスの延長-逆バージョン
         int tmp = mate[u];
         mate[u] = mate[v];
         mate[mate[v]] = tmp;
         mate[v] = 0;
       }
-      // else if (mate[mate[u]] == u && mate[mate[v]] == v)
       else if (mate[u] != u && mate[v] != v)
       {
         // 2つのパスの融合
@@ -270,27 +229,19 @@ public:
     // sが中点の枝刈り
     if (mate[G.getStart()] == 0)
     {
-      // std::cout << "sが中点！" << std::endl;
+      countBranchCut++;
       return 0;
     }
 
-    // TODO: sとt以外の頂点が短点となってフロンティアから抜ける枝刈り
-    // levelから今回フロンティアから抜けるものをピックアップ
-    // それがsとtではなく，かつmate[u] != 0の時return 0
+    // sとt以外の頂点が短点となってフロンティアから抜ける枝刈り
     std::set<int> thisTimeFrontier = frontier[G.numEdges() - level];
-    // std::cout << "frontierのindex = ";
-    // std::cout << G.numEdges() - level << std::endl;
     std::set<int>::iterator f = thisTimeFrontier.begin();
     for (; f != thisTimeFrontier.end(); f++)
     {
-      // std::cout << "フロンティアの確認: ";
-      // std::cout << *f << std::endl;
-
       // sにつながる辺がなくなった時
       if (*f == G.getStart() && mate[*f] == G.getStart())
       {
-        // std::cout << "sがフロンティアから抜ける！ level = ";
-        // std::cout << level << std::endl;
+        countBranchCut++;
         return 0;
       }
 
@@ -300,8 +251,7 @@ public:
       // 端点である
       if (mate[*f] != 0 && mate[*f] != *f)
       {
-        // std::cout << "フロンティアから抜ける！ level = ";
-        // std::cout << level << std::endl;
+        countBranchCut++;
         return 0;
       }
 
@@ -315,26 +265,25 @@ public:
       }
     }
 
-    // TODO: s-tパスが孤立する枝刈り
-    // sが孤立したとき
+    // 最後まで行ったとき
     if (level == 1)
     {
-      // 最後まで行ったとき
+      // sが孤立
       if (mate[G.getStart()] == G.getStart())
       {
-        // std::cout << "sが孤立！" << std::endl;
+        countBranchCut++;
         return 0;
       }
 
       // tが孤立したとき
       if (mate[G.getTerminal()] == G.getTerminal())
       {
-        // std::cout << "tが孤立" << std::endl;
+        countBranchCut++;
         return 0;
       }
     }
 
-    // TODO: 終端節点チェック(解の完成)
+    // 終端節点チェック(解の完成)
     if (mate[G.getStart()] == G.getTerminal() && mate[G.getTerminal()] == G.getStart())
     {
       int success = 1;
@@ -344,15 +293,11 @@ public:
           continue;
         if (mate[i] != 0 && mate[i] != i)
         {
-          success = 0;
-          break;
+          return 0;
         }
       }
       // 解の完成
-      if (success == 1)
-        return -1;
-
-      return 0;
+      return -1;
     }
 
     // 冗長なパスあり
@@ -360,7 +305,7 @@ public:
     {
       if (mate[v] == u && mate[u] == v)
       {
-        // std::cout << "冗長なパス！" << std::endl;
+        countBranchCut++;
         return 0;
       }
     }
@@ -408,7 +353,7 @@ Graph readGraph(int argc, char **argv)
 int main(int argc, char **argv)
 {
   Graph G = readGraph(argc, argv);
-  G.print();
+  // G.print();
 
   PathZDD pathZdd(G);
   // フロンティアを構築
