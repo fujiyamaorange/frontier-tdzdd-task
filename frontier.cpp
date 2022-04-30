@@ -68,14 +68,6 @@ public:
       tmpset.insert(u);
       tmpset.insert(v);
 
-      // std::cout << "tmpsetの確認開始" << std::endl;
-      // std::set<int>::iterator t = tmpset.begin();
-      // while (t != tmpset.end())
-      // {
-      //   std::cout << *t++ << std::endl;
-      // }
-      // std::cout << "tmpsetの確認終了" << std::endl;
-
       // これから出てくる点の集合をnokoriにまとめる
       for (int j = i + 1; j < numEdges(); j++)
       {
@@ -84,13 +76,6 @@ public:
         nokori.insert(x);
         nokori.insert(y);
       }
-      // std::cout << "nokoriの確認開始" << std::endl;
-      // std::set<int>::iterator n = nokori.begin();
-      // while (n != nokori.end())
-      // {
-      //   std::cout << *n++ << std::endl;
-      // }
-      // std::cout << "nokoriの確認終了" << std::endl;
 
       if (nokori.size() <= 0)
         continue;
@@ -109,19 +94,6 @@ public:
 
       nokori.clear();
     }
-
-    // std::cout << "フロンティアの確認開始" << std::endl;
-    // for (int i = 0; i < numEdges(); i++)
-    // {
-    //   std::cout << i;
-    //   std::cout << "の時のフロンティア" << std::endl;
-    //   std::set<int>::iterator k = frontier[i].begin();
-    //   for (; k != frontier[i].end(); k++)
-    //   {
-    //     std::cout << *k << std::endl;
-    //   }
-    // }
-    // std::cout << "フロンティアの確認終了" << std::endl;
   }
 
   void printEdges() const
@@ -359,7 +331,7 @@ int main(int argc, char **argv)
   // フロンティアを構築
   G.constructFrontier();
   tdzdd::DdStructure<2> dd(pathZdd);
-  std::cout << "dd.zddCardinality(): ";
+  std::cout << "パスの数: ";
   std::cout << dd.zddCardinality() << std::endl;
   // dd.dumpDot();
 }
